@@ -1,0 +1,11 @@
+name: baseline
+execution:
+  parallel: false
+selection:
+  prioritize_uncovered: false
+attack:
+  mutation: false
+  adaptive: false
+  multi_turn: false
+evaluation:
+  rule_based: true
