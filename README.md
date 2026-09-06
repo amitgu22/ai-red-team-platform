@@ -60,3 +60,28 @@ git add .
 git commit -m "Complete Phase 2.1 campaign builder and parallel orchestration"
 git push
 ```
+
+## Phase 2.2 — Vendor Adapter Framework
+
+Phase 2.2 introduces a common vendor adapter contract so the orchestrator is vendor-neutral.
+
+### Adapter lifecycle
+
+`discover → validate → execute → normalize`
+
+Built-in adapters currently cover Promptfoo, PyRIT, Garak and Striker. The POC adapters execute the configured target HTTP surface while preserving a vendor-specific boundary; replacing an adapter with a real CLI/API integration does not require changing the campaign orchestrator.
+
+### Vendor API
+
+- `GET /api/vendors` — discover registered adapters and capabilities
+- `GET /api/vendors/{name}/validate?scenario_category=...` — validate scenario/vendor compatibility
+
+### Onboarding a new vendor
+
+1. Implement `VendorAdapter` in `backend/app/adapters/`.
+2. Define capabilities and execution modes.
+3. Register the adapter in `registry.py`.
+4. Add adapter tests.
+5. No orchestrator changes are required.
+
+This is the foundation for Phase 2.3: real provider execution, retry policies, timeouts, artifact capture, and queue-backed workers.
