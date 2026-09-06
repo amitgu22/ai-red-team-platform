@@ -92,3 +92,14 @@ class Finding(Base):
     evidence:Mapped[dict]=mapped_column(JSON,default=dict)
     status:Mapped[str]=mapped_column(String(30),default="OPEN")
     created_at:Mapped[datetime]=mapped_column(DateTime,default=datetime.utcnow)
+
+
+class Remediation(Base):
+    __tablename__="remediations"
+    id:Mapped[int]=mapped_column(primary_key=True)
+    finding_id:Mapped[int]=mapped_column(ForeignKey("findings.id"), unique=True)
+    owner:Mapped[str|None]=mapped_column(String(150),nullable=True)
+    due_date:Mapped[datetime|None]=mapped_column(DateTime,nullable=True)
+    status:Mapped[str]=mapped_column(String(30),default="OPEN")
+    notes:Mapped[str|None]=mapped_column(Text,nullable=True)
+    created_at:Mapped[datetime]=mapped_column(DateTime,default=datetime.utcnow)

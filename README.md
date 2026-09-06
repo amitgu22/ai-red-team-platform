@@ -128,3 +128,17 @@ The platform deliberately does not hard-code a single vendor CLI version because
 - Phase 2.1 — campaign builder and parallel orchestration
 - Phase 2.2 — vendor-neutral adapter contract
 - Phase 2.3 — real CLI execution boundary, Redis queue, worker execution, retries, timeouts and artifacts
+
+## Phase 4 — Governance, Coverage & Reporting
+
+Phase 4 adds an enterprise governance layer: risk register, remediation ownership/status, attack coverage, campaign risk trends, CSV export, and PDF executive reports.
+
+### Governance APIs
+- `GET /api/governance/risk-register`
+- `PUT /api/governance/risk-register/{finding_id}`
+- `GET /api/governance/coverage`
+- `GET /api/governance/trends`
+- `GET /api/governance/export.csv`
+- `GET /api/export/campaign/{campaign_id}.pdf`
+
+The UI now includes **Risk Register**, **Coverage**, and **Trends** pages.

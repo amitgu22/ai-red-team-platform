@@ -15,6 +15,7 @@ def init_db():
     # POC migration for Phase 2.1 when reusing an existing Phase 2 volume.
     with engine.begin() as conn:
         conn.exec_driver_sql("ALTER TABLE test_runs ADD COLUMN IF NOT EXISTS attempt INTEGER NOT NULL DEFAULT 1")
+    # Phase 4 risk/governance tables are created by metadata above.
     from app.seed import seed
     db=SessionLocal()
     try: seed(db)
