@@ -103,3 +103,35 @@ class Remediation(Base):
     status:Mapped[str]=mapped_column(String(30),default="OPEN")
     notes:Mapped[str|None]=mapped_column(Text,nullable=True)
     created_at:Mapped[datetime]=mapped_column(DateTime,default=datetime.utcnow)
+
+class AuditLog(Base):
+    __tablename__="audit_logs"
+    id:Mapped[int]=mapped_column(primary_key=True)
+    actor:Mapped[str]=mapped_column(String(150),default="unknown")
+    role:Mapped[str]=mapped_column(String(50),default="unknown")
+    action:Mapped[str]=mapped_column(String(100))
+    resource:Mapped[str]=mapped_column(String(250))
+    method:Mapped[str]=mapped_column(String(20))
+    status_code:Mapped[int]=mapped_column(Integer)
+    audit_metadata:Mapped[dict]=mapped_column(JSON,default=dict)
+    created_at:Mapped[datetime]=mapped_column(DateTime,default=datetime.utcnow,index=True)
+
+class Policy(Base):
+    __tablename__="policies"
+    id:Mapped[int]=mapped_column(primary_key=True)
+    name:Mapped[str]=mapped_column(String(150),unique=True,index=True)
+    description:Mapped[str]=mapped_column(Text)
+    rules:Mapped[dict]=mapped_column(JSON,default=dict)
+    enabled:Mapped[bool]=mapped_column(Boolean,default=True)
+    created_at:Mapped[datetime]=mapped_column(DateTime,default=datetime.utcnow)
+
+class Schedule(Base):
+    __tablename__="assessment_schedules"
+    id:Mapped[int]=mapped_column(primary_key=True)
+    name:Mapped[str]=mapped_column(String(150),unique=True)
+    config_id:Mapped[int]=mapped_column(ForeignKey("test_configurations.id"))
+    cron:Mapped[str]=mapped_column(String(100))
+    enabled:Mapped[bool]=mapped_column(Boolean,default=True)
+    last_run_at:Mapped[datetime|None]=mapped_column(DateTime,nullable=True)
+    next_run_at:Mapped[datetime|None]=mapped_column(DateTime,nullable=True)
+    created_at:Mapped[datetime]=mapped_column(DateTime,default=datetime.utcnow)

@@ -1,8 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi import Request, Depends
+from app.auth import authenticate
+from app.database import SessionLocal
+from app.models import AuditLog
 from app.database import init_db
 from app.api import health, scenarios, strategies, testconfigs, campaigns, catalog, vendors, findings, reports, governance
-app=FastAPI(title="AI Red Team Platform",version="0.4.0")
+app=FastAPI(title="AI Red Team Platform",version="0.5.0")
 app.add_middleware(CORSMiddleware,allow_origins=["*"],allow_methods=["*"],allow_headers=["*"])
 app.include_router(health.router,prefix="/api")
 app.include_router(scenarios.router,prefix="/api")
@@ -14,7 +18,22 @@ app.include_router(vendors.router,prefix="/api")
 app.include_router(findings.router,prefix="/api")
 app.include_router(reports.router,prefix="/api")
 app.include_router(governance.router,prefix="/api")
-from app.api import export
+from app.api import export, auth, platform
 app.include_router(export.router,prefix="/api")
+app.include_router(auth.router,prefix="/api", dependencies=[Depends(authenticate)])
+app.include_router(platform.router,prefix="/api", dependencies=[Depends(authenticate)])
+@app.middleware("http")
+async def audit_requests(request: Request, call_next):
+    response=await call_next(request)
+    identity=getattr(request.state,"identity",{"name":"anonymous","role":"unknown"})
+    if request.url.path.startswith("/api/") and request.url.path != "/api/health":
+        try:
+            with SessionLocal() as db:
+                db.add(AuditLog(actor=identity.get("name","unknown"), role=identity.get("role","unknown"), action=request.method, resource=request.url.path, method=request.method, status_code=response.status_code, audit_metadata={"query":str(request.url.query)}))
+                db.commit()
+        except Exception:
+            pass
+    return response
+
 @app.on_event("startup")
 def startup(): init_db()
