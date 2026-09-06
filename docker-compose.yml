@@ -12,6 +12,9 @@ services:
     environment:
       DATABASE_URL: postgresql+psycopg://redteam:redteam@postgres:5432/redteam
       REDIS_URL: redis://redis:6379/0
+      ARTIFACT_ROOT: /artifacts
+    volumes:
+      - redteam-artifacts:/artifacts
     depends_on:
       postgres:
         condition: service_healthy
@@ -24,6 +27,13 @@ services:
     environment:
       DATABASE_URL: postgresql+psycopg://redteam:redteam@postgres:5432/redteam
       REDIS_URL: redis://redis:6379/0
+      ARTIFACT_ROOT: /artifacts
+      PROMPTFOO_COMMAND: ${PROMPTFOO_COMMAND:-}
+      PYRIT_COMMAND: ${PYRIT_COMMAND:-}
+      GARAK_COMMAND: ${GARAK_COMMAND:-}
+      STRIKER_COMMAND: ${STRIKER_COMMAND:-}
+    volumes:
+      - redteam-artifacts:/artifacts
     depends_on:
       postgres:
         condition: service_healthy
@@ -54,3 +64,4 @@ services:
 
 volumes:
   postgres-data:
+  redteam-artifacts:

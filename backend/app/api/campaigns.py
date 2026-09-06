@@ -1,10 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi.background import BackgroundTasks
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import Campaign, TestConfiguration, TestRun
 from app.schemas import CampaignCreate, CampaignRead, TestRunRead
-from app.orchestrator.engine import execute_campaign
+from app.orchestrator.queue import enqueue
 
 router = APIRouter(prefix="/campaigns", tags=["campaigns"])
 
@@ -20,12 +19,12 @@ def create_campaign(p: CampaignCreate, db: Session = Depends(get_db)):
     db.add(c); db.commit(); db.refresh(c); return c
 
 @router.post("/{campaign_id}/start", response_model=CampaignRead)
-def start_campaign(campaign_id: int, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+def start_campaign(campaign_id: int, db: Session = Depends(get_db)):
     c = db.get(Campaign, campaign_id)
     if not c: raise HTTPException(404, "Campaign not found")
     if c.status in {"RUNNING", "COMPLETED"}: return c
     c.status = "QUEUED"; db.commit(); db.refresh(c)
-    background_tasks.add_task(execute_campaign, c.id)
+    enqueue(c.id)
     return c
 
 @router.get("/{campaign_id}/runs", response_model=list[TestRunRead])

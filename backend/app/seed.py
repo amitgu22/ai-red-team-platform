@@ -20,10 +20,10 @@ def seed(db):
       if not db.query(Scenario).filter_by(key=x[0]).first():
         db.add(Scenario(key=x[0],name=x[1],category=x[2],severity=x[3],objective=x[4],prompt_template=x[5],supported_surfaces=x[6]))
     strategies=[
-      ("Baseline",{"parallel":False,"adaptive":False,"multi_turn":False}),
-      ("Maximum Coverage",{"parallel":True,"adaptive":True,"multi_turn":True,"prioritize_high_risk":True}),
-      ("Fast Scan",{"parallel":True,"adaptive":False,"multi_turn":False,"max_attempts":1}),
-      ("Deep Adaptive",{"parallel":True,"adaptive":True,"multi_turn":True,"max_attempts":5})
+      ("Baseline",{"parallel":False,"adaptive":False,"multi_turn":False,"retries":1,"timeout_seconds":60}),
+      ("Maximum Coverage",{"parallel":True,"adaptive":True,"multi_turn":True,"prioritize_high_risk":True,"retries":2,"timeout_seconds":90}),
+      ("Fast Scan",{"parallel":True,"adaptive":False,"multi_turn":False,"max_attempts":1,"retries":0,"timeout_seconds":30}),
+      ("Deep Adaptive",{"parallel":True,"adaptive":True,"multi_turn":True,"max_attempts":5,"retries":2,"timeout_seconds":120})
     ]
     for n,c in strategies:
       if not db.query(Strategy).filter_by(name=n).first(): db.add(Strategy(name=n,config=c))

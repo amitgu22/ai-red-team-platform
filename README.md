@@ -1,4 +1,4 @@
-# AI Red Team Platform — Phase 2.1
+# AI Red Team Platform — Phase 2.3
 
 Phase 2.1 turns the Phase 2 POC into a usable campaign-building flow:
 
@@ -85,3 +85,46 @@ Built-in adapters currently cover Promptfoo, PyRIT, Garak and Striker. The POC a
 5. No orchestrator changes are required.
 
 This is the foundation for Phase 2.3: real provider execution, retry policies, timeouts, artifact capture, and queue-backed workers.
+
+## Phase 2.3 — Real Execution Layer
+
+Phase 2.3 replaces API background execution with a Redis-backed campaign queue and worker execution model.
+
+### Execution architecture
+
+`API → Redis Queue → Worker → Campaign Engine → Vendor Adapter → Target → Normalized TestRun`
+
+### Real vendor CLI integration
+
+Each built-in adapter supports an optional command template through environment variables:
+
+- `PROMPTFOO_COMMAND`
+- `PYRIT_COMMAND`
+- `GARAK_COMMAND`
+- `STRIKER_COMMAND`
+
+Templates support `{prompt_file}`, `{target}`, `{scenario}`, `{attempt}` and `{output_file}`. The prompt is written to an artifact file rather than placed directly in the process command line.
+
+If a command is not configured, the local HTTP fallback remains available for the sample target, making the demo runnable without installing external security tools.
+
+### Reliability controls
+
+- Redis queue decouples API requests from execution.
+- Worker process supports graceful shutdown.
+- Per-test timeout.
+- Bounded retries for failed/time-out executions.
+- Per-run artifact directory under `/artifacts/<campaign>/<test-run>`.
+- Vendor stdout/stderr capture and optional JSON output capture.
+- Normalized result contract remains unchanged for downstream findings/reporting.
+
+### Example command template
+
+Set a vendor command in `.env` according to the CLI/API version installed in your worker image. For example, a wrapper script can accept the platform placeholders and invoke the exact vendor CLI syntax required by your environment.
+
+The platform deliberately does not hard-code a single vendor CLI version because Promptfoo, PyRIT, Garak and Striker installation/CLI interfaces can vary by release.
+
+
+### Phase history
+- Phase 2.1 — campaign builder and parallel orchestration
+- Phase 2.2 — vendor-neutral adapter contract
+- Phase 2.3 — real CLI execution boundary, Redis queue, worker execution, retries, timeouts and artifacts

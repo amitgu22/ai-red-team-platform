@@ -1,10 +1,10 @@
-from .mock import HTTPVendorAdapter
+from .command import CommandVendorAdapter
 
 BUILTIN_ADAPTERS = {
-    "Promptfoo": HTTPVendorAdapter("Promptfoo", ["jailbreak", "prompt-injection", "data-leakage"], ["batch"]),
-    "PyRIT": HTTPVendorAdapter("PyRIT", ["jailbreak", "prompt-injection", "adaptive", "multi-turn"], ["batch", "adaptive", "multi-turn"]),
-    "Garak": HTTPVendorAdapter("Garak", ["jailbreak", "prompt-injection", "data-leakage", "hallucination"], ["batch"]),
-    "Striker": HTTPVendorAdapter("Striker", ["prompt-injection", "agent", "tool-abuse"], ["batch", "agent"]),
+    "Promptfoo": CommandVendorAdapter("Promptfoo", ["jailbreak", "prompt-injection", "data-leakage"], ["batch"], "PROMPTFOO_COMMAND"),
+    "PyRIT": CommandVendorAdapter("PyRIT", ["jailbreak", "prompt-injection", "adaptive", "multi-turn"], ["batch", "adaptive", "multi-turn"], "PYRIT_COMMAND"),
+    "Garak": CommandVendorAdapter("Garak", ["jailbreak", "prompt-injection", "data-leakage", "hallucination"], ["batch"], "GARAK_COMMAND"),
+    "Striker": CommandVendorAdapter("Striker", ["prompt-injection", "agent", "tool-abuse"], ["batch", "agent"], "STRIKER_COMMAND"),
 }
 
 def get_adapter(name: str):
