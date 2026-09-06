@@ -1,0 +1,5 @@
+name: Deep Adaptive
+parallel: true
+adaptive: true
+multi_turn: true
+max_attempts: 5

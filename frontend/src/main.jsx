@@ -1,127 +1,25 @@
-import React, { useEffect, useState } from "react";
-import { createRoot } from "react-dom/client";
-import "./styles.css";
-
-const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
-
-function App() {
-  const [page, setPage] = useState("Dashboard");
-  const [providers, setProviders] = useState([]);
-  const [targets, setTargets] = useState([]);
-
-  async function load() {
-    const [p, t] = await Promise.all([
-      fetch(`${API}/api/providers`).then(r => r.json()),
-      fetch(`${API}/api/targets`).then(r => r.json())
-    ]);
-    setProviders(p);
-    setTargets(t);
-  }
-
-  useEffect(() => { load(); }, []);
-
-  async function seedProviders() {
-    await fetch(`${API}/api/providers/seed`, {method: "POST"});
-    load();
-  }
-
-  async function seedTarget() {
-    await fetch(`${API}/api/targets/seed`, {method: "POST"});
-    load();
-  }
-
-  const nav = ["Dashboard", "Providers", "Targets", "Scenarios", "Strategies", "Test Configurations", "Campaigns", "Findings", "Reports"];
-
-  return (
-    <div className="app">
-      <aside>
-        <div className="brand">AI <span>RED TEAM</span></div>
-        <div className="subtitle">Security Testing Platform</div>
-        {nav.map(item => (
-          <button className={page === item ? "nav active" : "nav"} onClick={() => setPage(item)} key={item}>
-            {item}
-          </button>
-        ))}
-        <div className="phase">PHASE 1 POC</div>
-      </aside>
-
-      <main>
-        <header>
-          <div>
-            <div className="eyebrow">AI SECURITY CENTER</div>
-            <h1>{page}</h1>
-          </div>
-          <button className="primary">+ New Campaign</button>
-        </header>
-
-        {page === "Dashboard" && (
-          <>
-            <section className="cards">
-              <Card title="Security Score" value="72" suffix="/100" note="Demo baseline" />
-              <Card title="Attack Coverage" value="84" suffix="%" note="Target capability coverage" />
-              <Card title="Findings" value="47" suffix="" note="3 critical · 11 high" />
-              <Card title="Providers" value={providers.length || "0"} suffix="" note="Execution engines" />
-            </section>
-
-            <section className="grid">
-              <Panel title="Attack Surface">
-                {[
-                  ["Prompt Injection", 91],
-                  ["Jailbreak", 78],
-                  ["Data Leakage", 69],
-                  ["RAG", 57],
-                  ["Agent", 51],
-                  ["Tool Abuse", 38]
-                ].map(([name, score]) => <div className="barrow" key={name}><span>{name}</span><div className="bar"><i style={{width: score + "%"}} /></div><b>{score}%</b></div>)}
-              </Panel>
-              <Panel title="Environment">
-                <div className="status">● API online</div>
-                <div className="status">● PostgreSQL connected</div>
-                <div className="status">● Redis available</div>
-                <div className="status">● Sample target ready</div>
-              </Panel>
-            </section>
-          </>
-        )}
-
-        {page === "Providers" && (
-          <section className="panel">
-            <div className="panelhead"><h2>Execution Providers</h2><button onClick={seedProviders}>Load POC Providers</button></div>
-            {providers.length === 0 ? <Empty text="No providers yet. Load the four Phase 1 provider definitions." /> :
-              providers.map(p => <div className="listrow" key={p.id}><div><strong>{p.name}</strong><small>{p.provider_type} · {p.capabilities.join(" · ")}</small></div><span className="pill">READY</span></div>)}
-          </section>
-        )}
-
-        {page === "Targets" && (
-          <section className="panel">
-            <div className="panelhead"><h2>Target Applications</h2><button onClick={seedTarget}>Add Sample Target</button></div>
-            {targets.length === 0 ? <Empty text="No targets registered." /> :
-              targets.map(t => <div className="listrow" key={t.id}><div><strong>{t.name}</strong><small>{t.target_type} · {t.endpoint}</small></div><span className="pill">READY</span></div>)}
-          </section>
-        )}
-
-        {["Scenarios", "Strategies", "Test Configurations", "Campaigns", "Findings", "Reports"].includes(page) && (
-          <section className="panel placeholder">
-            <div className="icon">◈</div>
-            <h2>{page} module</h2>
-            <p>This module is scaffolded for Phase 2. The data model and UI navigation are intentionally prepared for the orchestrator, attack scenarios, evaluation, findings and reporting layers.</p>
-          </section>
-        )}
-      </main>
-    </div>
-  );
-}
-
-function Card({title, value, suffix, note}) {
-  return <div className="card"><div className="muted">{title}</div><div className="metric">{value}<small>{suffix}</small></div><div className="note">{note}</div></div>
-}
-
-function Panel({title, children}) {
-  return <div className="panel"><h2>{title}</h2>{children}</div>
-}
-
-function Empty({text}) {
-  return <div className="empty">{text}</div>
-}
-
-createRoot(document.getElementById("root")).render(<App />);
+import React,{useEffect,useState}from"react";import{createRoot}from"react-dom/client";import"./styles.css";
+const API=import.meta.env.VITE_API_URL||"http://localhost:8000";
+const getJson=path=>fetch(`${API}/api/${path}`).then(async r=>{if(!r.ok)throw new Error(await r.text());return r.json()});
+function App(){const[page,setPage]=useState("Dashboard"),[data,setData]=useState({providers:[],targets:[],scenarios:[],strategies:[],configs:[],campaigns:[],runs:[]}),[form,setForm]=useState({name:"",target_id:"",provider_ids:[],scenario_ids:[],strategy_id:"",attempts:1}),[selected,setSelected]=useState(null),[busy,setBusy]=useState(false),[error,setError]=useState("");
+ const load=async()=>{try{const [providers,targets,scenarios,strategies,configs,campaigns]=await Promise.all([getJson("providers"),getJson("targets"),getJson("scenarios"),getJson("strategies"),getJson("test-configurations"),getJson("campaigns")]);setData(d=>({...d,providers,targets,scenarios,strategies,configs,campaigns}));if(!form.target_id&&targets[0])setForm(f=>({...f,target_id:String(targets[0].id)}));if(!form.strategy_id&&strategies[0])setForm(f=>({...f,strategy_id:String(strategies[0].id)}));}catch(e){setError(e.message)}};
+ useEffect(()=>{load()},[]);useEffect(()=>{if(page!=="Campaigns")return;const refresh=async()=>{await load();if(selected){try{setData(d=>({...d,runs:await getJson(`campaigns/${selected}/runs`)}))}catch{}}};refresh();const t=setInterval(refresh,1500);return()=>clearInterval(t)},[page,selected]);
+ const toggle=(key,id)=>setForm(f=>({...f,[key]:f[key].includes(id)?f[key].filter(x=>x!==id):[...f[key],id]}));
+ const createConfig=async e=>{e.preventDefault();setBusy(true);setError("");try{await fetch(API+"/api/test-configurations",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...form,target_id:Number(form.target_id),strategy_id:Number(form.strategy_id),attempts:Number(form.attempts)})}).then(async r=>{if(!r.ok)throw new Error(await r.text());return r.json()});await load();setPage("Test Configurations")}catch(e){setError(e.message)}finally{setBusy(false)}};
+ const launch=async config=>{setBusy(true);try{const c=await fetch(API+"/api/campaigns",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:`${config.name} Campaign`,config_id:config.id})}).then(r=>r.json());await fetch(API+`/api/campaigns/${c.id}/start`,{method:"POST"});setSelected(c.id);setPage("Campaigns");await load()}finally{setBusy(false)}};
+ const openRuns=async c=>{setSelected(c.id);setData(d=>({...d,runs:[]}));try{setData(d=>({...d,runs:await getJson(`campaigns/${c.id}/runs`)}))}catch(e){setError(e.message)}};
+ const nav=["Dashboard","Providers","Targets","Scenarios","Strategies","Test Configurations","Campaigns","Findings","Reports"];
+ return <div className="app"><aside><div className="brand">AI <span>RED TEAM</span></div><div className="sub">Security Testing Platform</div>{nav.map(x=><button key={x} className={page===x?"nav active":"nav"} onClick={()=>setPage(x)}>{x}</button>)}</aside><main><header><div><div className="eyebrow">PHASE 2 · ORCHESTRATION</div><h1>{page}</h1></div><button className="primary" disabled={busy} onClick={()=>setPage("Test Configurations")}>＋ New Test Configuration</button></header>{error&&<div className="error">{error}</div>}
+ {page==="Dashboard"&&<><div className="cards"><Card t="Providers" v={data.providers.length}/><Card t="Targets" v={data.targets.length}/><Card t="Scenarios" v={data.scenarios.length}/><Card t="Campaigns" v={data.campaigns.length}/></div><Panel title="Execution Pipeline"><div className="pipeline"><span>Target</span>→<span>Scenario Planner</span>→<span>Strategy</span>→<span>Provider Fan-out</span>→<span>Normalized Result</span></div></Panel></>}
+ {page==="Providers"&&<Panel title="Provider Registry">{data.providers.map(p=><Row key={p.id} title={p.name} detail={`${p.enabled?"ENABLED":"DISABLED"} · ${p.execution_modes.join(", ")} · ${p.capabilities.join(", ")}`}/>)}</Panel>}
+ {page==="Targets"&&<Panel title="Authorized Targets">{data.targets.map(t=><Row key={t.id} title={t.name} detail={`${t.target_type} · ${t.endpoint} · ${t.capabilities.join(", ")}`}/>)}</Panel>}
+ {page==="Scenarios"&&<Panel title="Scenario Library">{data.scenarios.map(s=><Row key={s.id} title={s.name} detail={`${s.key} · ${s.category} · ${s.severity} · ${s.supported_surfaces.join(", ")}`}/>)}</Panel>}
+ {page==="Strategies"&&<Panel title="Execution Strategies">{data.strategies.map(s=><Row key={s.id} title={s.name} detail={JSON.stringify(s.config)}/>)}</Panel>}
+ {page==="Test Configurations"&&<ConfigBuilder form={form} setForm={setForm} data={data} toggle={toggle} submit={createConfig} busy={busy}/>} 
+ {page==="Campaigns"&&<Campaigns data={data} selected={selected} openRuns={openRuns} launch={launch}/>} 
+ {["Findings","Reports"].includes(page)&&<Panel title={page}><p className="muted">Phase 2 stores normalized test runs. Phase 3 will convert failed runs into findings, risk scoring, recommendations and exportable reports.</p></Panel>}
+ </main></div>}
+function Card({t,v}){return <div className="card"><span>{t}</span><b>{v}</b></div>}function Panel({title,children}){return <section className="panel"><h2>{title}</h2>{children}</section>}function Row({title,detail}){return <div className="row"><strong>{title}</strong><small>{detail}</small></div>}
+function ConfigBuilder({form,setForm,data,toggle,submit,busy}){return <form className="panel builder" onSubmit={submit}><h2>Build Test Configuration</h2><label>Name<input required value={form.name} onChange={e=>setForm({...form,name:e.target.value})} placeholder="Agent Security Baseline"/></label><label>Target<select required value={form.target_id} onChange={e=>setForm({...form,target_id:e.target.value})}><option value="">Select target</option>{data.targets.map(x=><option key={x.id} value={x.id}>{x.name}</option>)}</select></label><div><b>Providers</b><div className="chips">{data.providers.map(x=><button type="button" key={x.id} className={form.provider_ids.includes(x.id)?"chip selected":"chip"} onClick={()=>toggle("provider_ids",x.id)}>{x.name}</button>)}</div></div><div><b>Scenarios</b><div className="chips">{data.scenarios.map(x=><button type="button" key={x.id} className={form.scenario_ids.includes(x.id)?"chip selected":"chip"} onClick={()=>toggle("scenario_ids",x.id)}>{x.key} · {x.name}</button>)}</div></div><label>Strategy<select required value={form.strategy_id} onChange={e=>setForm({...form,strategy_id:e.target.value})}><option value="">Select strategy</option>{data.strategies.map(x=><option key={x.id} value={x.id}>{x.name}</option>)}</select></label><label>Attempts<input type="number" min="1" max="20" value={form.attempts} onChange={e=>setForm({...form,attempts:e.target.value})}/></label><button className="primary" disabled={busy||!form.provider_ids.length||!form.scenario_ids.length}>Save Configuration</button></form>}
+function Campaigns({data,selected,openRuns,launch}){const c=data.campaigns.find(x=>x.id===selected);return <div className="split"><Panel title="Campaigns">{data.campaigns.map(x=><div className="campaign" key={x.id} onClick={()=>openRuns(x)}><strong>{x.name}</strong><small>{x.status} · {x.completed_tests}/{x.total_tests||"…"} tests</small></div>)}{data.configs.length>0&&<button className="secondary" onClick={()=>launch(data.configs[0])}>▶ Launch latest configuration</button>}</Panel><Panel title={c?`Run Details · ${c.name}`:"Run Details"}>{c?<><div className="progress"><div style={{width:`${c.total_tests?Math.round(c.completed_tests/c.total_tests*100):0}%`}}/></div><p>{c.status} · {c.completed_tests}/{c.total_tests} completed</p>{data.runs.map(r=><div className="run" key={r.id}><b>{r.provider}</b><span>{r.scenario} · attempt {r.attempt}</span><em className={r.success?"bad":"ok"}>{r.success?`FINDING · ${r.severity}`:"PASS"}</em></div>)}</>:<p className="muted">Select a campaign to inspect normalized test runs.</p>}</Panel></div>}
+createRoot(document.getElementById("root")).render(<App/>);

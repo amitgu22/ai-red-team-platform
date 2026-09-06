@@ -1,68 +1,62 @@
-# AI Red Team Platform — Phase 1
+# AI Red Team Platform — Phase 2.1
 
-A Dockerized proof-of-concept for a vendor-neutral AI red-teaming platform.
+Phase 2.1 turns the Phase 2 POC into a usable campaign-building flow:
 
-## Phase 1 includes
+**Target → Scenarios → Strategy → Providers → Campaign → Parallel execution → Normalized test runs**
 
-- React + Vite frontend
-- FastAPI backend
-- PostgreSQL
-- Redis
-- Sample AI target application
-- Provider/plugin abstraction for Promptfoo, PyRIT, Garak and Striker
-- Dashboard
-- Provider onboarding
-- Target management
-- Docker Compose local environment
+### Included
+- Provider registry for Promptfoo, PyRIT, Garak and Striker.
+- Authorized sample target registry.
+- Scenario library with prompt-injection, data-leakage, agent/tool-abuse and jailbreak coverage.
+- Execution strategies: Baseline, Fast Scan, Maximum Coverage and Deep Adaptive.
+- Visual Test Configuration builder: target, providers, scenarios, strategy and attempts.
+- Campaign launch through FastAPI background execution so the UI remains responsive.
+- Parallel provider/scenario fan-out when the selected strategy enables it.
+- Normalized `TestRun` records with provider, scenario, attempt, status, severity, request, response and evidence.
+- Campaign polling and run-detail view in the UI.
+- Safe local demo execution: the POC only calls the configured sample target endpoint.
+- Startup migration for the Phase 2.1 `test_runs.attempt` field when an existing PostgreSQL volume is reused.
 
-> This repository is a security-testing POC. Use only against systems and models you are authorized to test.
-
-## Quick start
+## Run
 
 ```bash
 docker compose up --build
 ```
 
-Open:
+Open http://localhost:3000
 
-- Frontend: http://localhost:3000
-- API: http://localhost:8000
-- API docs: http://localhost:8000/docs
-- Sample target: http://localhost:9000
+## Phase 2 workflow
+
+1. Open **Test Configurations**.
+2. Select the authorized target.
+3. Select one or more providers.
+4. Select one or more attack scenarios.
+5. Select an execution strategy and number of attempts.
+6. Save the configuration.
+7. Open **Campaigns** and launch it.
+8. Watch progress and inspect normalized runs.
+
+## API highlights
+
+- `GET /api/providers`
+- `GET /api/targets`
+- `GET /api/scenarios`
+- `GET /api/strategies`
+- `GET /api/test-configurations`
+- `POST /api/test-configurations`
+- `GET /api/campaigns`
+- `POST /api/campaigns`
+- `POST /api/campaigns/{id}/start`
+- `GET /api/campaigns/{id}/runs`
+
+## Next phase
+
+Phase 3 will connect normalized runs to **findings, risk scoring, MITRE ATLAS mapping, recommendations and audit-ready reports**. Real vendor adapters should only be enabled for targets the operator is authorized to assess.
 
 ## GitHub
 
 ```bash
-git init
 git add .
-git commit -m "Initial Phase 1 AI red team platform"
-git branch -M main
-git remote add origin <YOUR_GITHUB_REPOSITORY_URL>
-git push -u origin main
+git commit -m "Complete Phase 2.1 campaign builder and parallel orchestration"
+git push
 ```
-
-## Architecture
-
-```text
-React UI
-   |
-FastAPI API
-   |
-   +-- PostgreSQL
-   +-- Redis
-   +-- Provider Registry
-   |     +-- Promptfoo
-   |     +-- PyRIT
-   |     +-- Garak
-   |     +-- Striker
-   |
-   +-- Sample Target
-```
-
-## Roadmap
-
-Phase 2: scenarios, strategies, campaign orchestration and execution workers.
-
-Phase 3: normalized results, evaluators, findings, evidence and recommendations.
-
-Phase 4: reporting, attack-surface analytics and AWS deployment.

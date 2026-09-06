@@ -1,14 +1,5 @@
-name: maximum-coverage
-execution:
-  parallel: true
-  max_concurrency: 10
-selection:
-  prioritize_uncovered: true
-  prioritize_high_risk: true
-attack:
-  mutation: true
-  adaptive: true
-  multi_turn: true
-evaluation:
-  rule_based: true
-  llm_judge: true
+name: Maximum Coverage
+parallel: true
+adaptive: true
+multi_turn: true
+prioritize_high_risk: true

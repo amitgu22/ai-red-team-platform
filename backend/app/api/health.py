@@ -1,8 +1,4 @@
 from fastapi import APIRouter
-
-router = APIRouter()
-
-
+router=APIRouter()
 @router.get("/health")
-def health():
-    return {"status": "ok", "service": "ai-red-team-api", "version": "0.1.0"}
+def health(): return {"status":"ok","version":"0.2.0"}
