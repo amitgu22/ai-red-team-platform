@@ -63,6 +63,8 @@ def execute_campaign(campaign_id):
                 for f in as_completed(futures):
                     f.result(); db.refresh(campaign); campaign.completed_tests += 1; db.commit()
         campaign.status = "COMPLETED"; db.commit()
+        from app.findings import generate_for_campaign
+        generate_for_campaign(campaign_id)
     except Exception as exc:
         campaign = db.get(Campaign, campaign_id)
         if campaign:

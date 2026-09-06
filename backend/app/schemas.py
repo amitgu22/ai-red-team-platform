@@ -32,3 +32,11 @@ class CampaignRead(BaseModel):
 class TestRunRead(BaseModel):
     id:int; campaign_id:int; provider:str; scenario:str; attempt:int; status:str; success:Optional[bool]; severity:Optional[str]; request:Optional[str]; response:Optional[str]; evidence:dict
     class Config: from_attributes=True
+
+
+class FindingRead(BaseModel):
+    id:int; test_run_id:int; campaign_id:int; title:str; fingerprint:str; severity:str; risk_score:float; confidence:float; category:str; mitre_atlas:list; owasp_llm:list; impact:str; recommendation:str; evidence:dict; status:str
+    class Config: from_attributes=True
+
+class RiskSummary(BaseModel):
+    total:int; critical:int; high:int; medium:int; low:int; average_score:float; open:int

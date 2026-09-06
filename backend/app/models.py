@@ -72,3 +72,23 @@ class TestRun(Base):
     response:Mapped[str|None]=mapped_column(Text,nullable=True)
     evidence:Mapped[dict]=mapped_column(JSON,default=dict)
     created_at:Mapped[datetime]=mapped_column(DateTime,default=datetime.utcnow)
+
+
+class Finding(Base):
+    __tablename__="findings"
+    id:Mapped[int]=mapped_column(primary_key=True)
+    test_run_id:Mapped[int]=mapped_column(ForeignKey("test_runs.id"), unique=True)
+    campaign_id:Mapped[int]=mapped_column(ForeignKey("campaigns.id"), index=True)
+    title:Mapped[str]=mapped_column(String(250))
+    fingerprint:Mapped[str]=mapped_column(String(128), index=True)
+    severity:Mapped[str]=mapped_column(String(30))
+    risk_score:Mapped[float]=mapped_column(default=0)
+    confidence:Mapped[float]=mapped_column(default=0)
+    category:Mapped[str]=mapped_column(String(100))
+    mitre_atlas:Mapped[list]=mapped_column(JSON,default=list)
+    owasp_llm:Mapped[list]=mapped_column(JSON,default=list)
+    impact:Mapped[str]=mapped_column(Text)
+    recommendation:Mapped[str]=mapped_column(Text)
+    evidence:Mapped[dict]=mapped_column(JSON,default=dict)
+    status:Mapped[str]=mapped_column(String(30),default="OPEN")
+    created_at:Mapped[datetime]=mapped_column(DateTime,default=datetime.utcnow)
